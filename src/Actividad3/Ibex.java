@@ -16,8 +16,11 @@ public class Ibex {
 
 	public static final int CAMPO_FECHA = 2;
 	public static final int CAMPO_CLOSE = 7;
+	public static final int COL_CLOSE = 7;
+	public static final int COL_FECHA =2;
 
-	final static String RUTA = "res/bolsa.csv";
+
+	final static String RUTA = "/res/bolsa.csv";
 
 	/**
 	 * Recibe la ruta de un fichero de texto CSV con la información bursatil de
@@ -42,10 +45,7 @@ public class Ibex {
 		
 		if(sFecha==null) return -1;
 		
-		// Utilizo el paquete nio de Java y un try with resources
-		// para cerrarlo automáticamente
 		try (BufferedReader br = Files.newBufferedReader(ruta)) {
-			// BufferedReader br = new BufferedReader (new FileReader(path));
 
 			while ((record = br.readLine()) != null) {
 
@@ -101,5 +101,46 @@ public class Ibex {
 	static float getCloseValue(Date fecha) {
 		return getCloseValue(fecha, RUTA);
 	}
+
+	static float getCloseAvg(Date ini, Date fin, String path ){
+		String record;
+		Path ruta = Paths.get(path);
+		float close = 0.0f;
+		String fechaIni = dateToString(ini);
+		String fechaFin = dateToString(fin);
+		int contador = 0;
+
+		
+		if (fechaIni == null || fechaFin == null)
+			return -1;
+
+		try (BufferedReader br = Files.newBufferedReader(ruta)) {
+
+			while ((record = br.readLine()) != null) {
+
+				ArrayList<String> lFields = leerCampos(record, ",");
+
+				try {
+					if ((Float.parseFloat(lFields.get(COL_FECHA))) >= (Float.parseFloat(fechaIni))
+							&& (Float.parseFloat(lFields.get(COL_FECHA))) <= (Float.parseFloat(fechaFin))) {
+						contador++;
+						close += Float.parseFloat(lFields.get(COL_CLOSE));
+					}
+
+				} catch (Exception e) {
+					System.err.print("");
+				}
+
+			}
+
+		} catch (IOException e) {
+			System.err.println("Error E/S con " + fechaIni);
+			close = -1;
+		}
+
+		return close / contador;
+
+
+	};
 
 }
